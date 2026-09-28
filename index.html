@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nook - Community Forum</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <h1 class="loading-logo">Nook</h1>
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Loading...</p>
+        </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-screen hidden">
+        <div class="login-container">
+            <h1 class="login-logo">Nook</h1>
+            <p class="login-subtitle">Welcome to Nook Community</p>
+            
+            <button id="google-login-btn" class="login-btn google-btn">
+                <span class="btn-icon">G</span>
+                Continue with Google
+            </button>
+            
+            <button id="guest-login-btn" class="login-btn guest-btn">
+                <span class="btn-icon">👤</span>
+                Continue as Guest
+            </button>
+            
+            <p class="guest-warning">
+                <small>Guest accounts have limited permissions. Some features may not be available.</small>
+            </p>
+            
+            <div id="login-error" class="error-message hidden"></div>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="app-container" class="app-container hidden">
+        <!-- Mobile Menu Button -->
+        <button id="mobile-menu-btn" class="mobile-menu-btn hidden">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="sidebar-logo">Nook</h1>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-page="forum">
+                    <span class="nav-icon">💬</span>
+                    Forum
+                </button>
+                <button class="nav-item" data-page="archive">
+                    <span class="nav-icon">📦</span>
+                    Archive
+                </button>
+                <button class="nav-item" data-page="credits">
+                    <span class="nav-icon">ℹ️</span>
+                    Credits
+                </button>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-info" id="sidebar-user-info">
+                    <div id="user-avatar" class="user-avatar"></div>
+                    <div class="user-details">
+                        <p id="user-name" class="user-name"></p>
+                        <p id="user-role" class="user-role"></p>
+                    </div>
+                </div>
+                <button id="logout-btn" class="logout-btn">
+                    <span class="logout-icon">🚪</span>
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main id="main-content" class="main-content">
+            <!-- Forum Page -->
+            <div id="forum-page" class="page active">
+                <div class="page-header">
+                    <h2>Forum</h2>
+                    <button id="create-suggestion-btn" class="primary-btn">Create Suggestion</button>
+                </div>
+                
+                <!-- Create Suggestion Form -->
+                <div id="suggestion-form" class="suggestion-form hidden">
+                    <h3>Create New Suggestion</h3>
+                    <div class="form-group">
+                        <label for="suggestion-title">Title *</label>
+                        <input type="text" id="suggestion-title" class="form-input" placeholder="Enter suggestion title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="suggestion-description">Description *</label>
+                        <textarea id="suggestion-description" class="form-textarea" placeholder="Describe your suggestion in detail" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="suggestion-category">Category</label>
+                        <select id="suggestion-category" class="form-select">
+                            <option value="">Select category (optional)</option>
+                            <option value="general">General</option>
+                            <option value="feature">Feature Request</option>
+                            <option value="bug">Bug Report</option>
+                            <option value="improvement">Improvement</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button id="submit-suggestion-btn" class="primary-btn">Submit Suggestion</button>
+                        <button id="cancel-suggestion-btn" class="secondary-btn">Cancel</button>
+                    </div>
+                    <div id="suggestion-error" class="error-message hidden"></div>
+                </div>
+                
+                <!-- Suggestions List -->
+                <div id="suggestions-list" class="suggestions-list">
+                    <div class="loading-state">Loading suggestions...</div>
+                </div>
+            </div>
+
+            <!-- Archive Page -->
+            <div id="archive-page" class="page hidden">
+                <div class="page-header">
+                    <h2>Archive</h2>
+                </div>
+                <div id="archive-content" class="archive-content">
+                    <div class="empty-state">
+                        <div class="empty-icon">📦</div>
+                        <h3>The archive is currently empty.</h3>
+                        <p>Archive entries will appear here when added by administrators.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Credits Page -->
+            <div id="credits-page" class="page hidden">
+                <div class="page-header">
+                    <h2>Credits</h2>
+                </div>
+                <div class="credits-content">
+                    <div class="credits-section">
+                        <h3>Nook</h3>
+                        <p>Website project - A modern community forum platform</p>
+                    </div>
+                    
+                    <div class="credits-section">
+                        <h3>Development</h3>
+                        <p><!-- Add developer names here --></p>
+                    </div>
+                    
+                    <div class="credits-section">
+                        <h3>Technologies</h3>
+                        <ul class="tech-list">
+                            <li>HTML5</li>
+                            <li>CSS3</li>
+                            <li>JavaScript (ES6+)</li>
+                            <li>Firebase Authentication</li>
+                            <li>Firebase Firestore</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Page -->
+            <div id="profile-page" class="page hidden">
+                <div class="page-header">
+                    <h2>My Profile</h2>
+                    <button id="edit-profile-btn" class="primary-btn">Edit Profile</button>
+                </div>
+                
+                <!-- Profile View -->
+                <div id="profile-view" class="profile-view">
+                    <div class="profile-header">
+                        <div id="profile-avatar" class="profile-avatar-large"></div>
+                        <div class="profile-info">
+                            <h3 id="profile-name"></h3>
+                            <p id="profile-role" class="profile-role-badge"></p>
+                            <p id="profile-email" class="profile-email"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-details">
+                        <div class="profile-detail">
+                            <h4>Bio</h4>
+                            <p id="profile-bio"></p>
+                        </div>
+                        <div class="profile-detail">
+                            <h4>Location</h4>
+                            <p id="profile-location"></p>
+                        </div>
+                        <div class="profile-detail">
+                            <h4>Website</h4>
+                            <p id="profile-website"></p>
+                        </div>
+                        <div class="profile-detail">
+                            <h4>Member Since</h4>
+                            <p id="profile-joined"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Profile Edit Form -->
+                <div id="profile-edit" class="profile-edit hidden">
+                    <div class="suggestion-form">
+                        <h3>Edit Profile</h3>
+                        <div class="form-group">
+                            <label for="edit-display-name">Display Name</label>
+                            <input type="text" id="edit-display-name" class="form-input" placeholder="Your display name">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-bio">Bio</label>
+                            <textarea id="edit-bio" class="form-textarea" placeholder="Tell us about yourself..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-location">Location</label>
+                            <input type="text" id="edit-location" class="form-input" placeholder="Your location">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-website">Website</label>
+                            <input type="url" id="edit-website" class="form-input" placeholder="https://yourwebsite.com">
+                        </div>
+                        <div class="form-actions">
+                            <button id="save-profile-btn" class="primary-btn">Save Changes</button>
+                            <button id="cancel-edit-btn" class="secondary-btn">Cancel</button>
+                        </div>
+                        <div id="profile-error" class="error-message hidden"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Profile Page (viewing other users) -->
+            <div id="user-profile-page" class="page hidden">
+                <div class="page-header">
+                    <h2>User Profile</h2>
+                    <button id="back-to-forum-btn" class="secondary-btn">Back to Forum</button>
+                </div>
+                
+                <div id="user-profile-view" class="profile-view">
+                    <div class="profile-header">
+                        <div id="user-profile-avatar" class="profile-avatar-large"></div>
+                        <div class="profile-info">
+                            <h3 id="user-profile-name"></h3>
+                            <p id="user-profile-role" class="profile-role-badge"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-details">
+                        <div class="profile-detail">
+                            <h4>Bio</h4>
+                            <p id="user-profile-bio"></p>
+                        </div>
+                        <div class="profile-detail">
+                            <h4>Location</h4>
+                            <p id="user-profile-location"></p>
+                        </div>
+                        <div class="profile-detail">
+                            <h4>Website</h4>
+                            <p id="user-profile-website"></p>
+                        </div>
+                        <div class="profile-detail">
+                            <h4>Member Since</h4>
+                            <p id="user-profile-joined"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Firebase Configuration and Initialization -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, serverTimestamp, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBH35eAN5vEtCAVf6PgBdf_4FyZqfEBwYQ",
+            authDomain: "nook-ec4c9.firebaseapp.com",
+            projectId: "nook-ec4c9",
+            storageBucket: "nook-ec4c9.firebasestorage.app",
+            messagingSenderId: "532107553382",
+            appId: "1:532107553382:web:ee57cdc5e4a1fea3689ba7",
+            measurementId: "G-KGSK8DD8X8"
+        };
+
+        // Initialize Firebase
+        let app, auth, db;
+
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+
+            // Make Firebase available globally
+            window.firebaseApp = { initializeApp, getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously, onAuthStateChanged, signOut, getFirestore, collection, addDoc, getDocs, query, where, orderBy, serverTimestamp, doc, setDoc, getDoc };
+            window.firebaseAuth = auth;
+            window.firebaseDb = db;
+
+            console.log('Firebase initialized successfully');
+        } catch (error) {
+            console.error('Error initializing Firebase:', error);
+            alert('Error initializing Firebase. Please check your configuration.');
+        }
+    </script>
+
+    <!-- Main App Script -->
+    <script src="app.js"></script>
+</body>
+</html>

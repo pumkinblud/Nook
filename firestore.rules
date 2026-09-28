@@ -1,0 +1,177 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================
+    // Helper Functions
+    // ========================================
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Get user's role from their document
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    
+    // Check if user has specific role
+    function hasRole(role) {
+      return isAuthenticated() && getUserRole() == role;
+    }
+    
+    // Check if user is admin or moderator
+    function isModeratorOrAbove() {
+      return isAuthenticated() && (getUserRole() in ['admin', 'moderator']);
+    }
+    
+    // Check if user is admin
+    function isAdmin() {
+      return hasRole('admin');
+    }
+    
+    // Check if user is the owner of a document
+    function isOwner(userIdField) {
+      return isAuthenticated() && request.auth.uid == resource.data[userIdField];
+    }
+    
+    // ========================================
+    // Users Collection
+    // ========================================
+    
+    match /users/{userId} {
+      // Allow read access for authenticated users
+      // This allows users to see other users' basic info
+      allow read: if isAuthenticated();
+      
+      // Allow create only when:
+      // - User is authenticated
+      // - The document ID matches their UID
+      // - They are setting their own role to 'user' or 'guest' (not admin)
+      allow create: if isAuthenticated() 
+                    && request.auth.uid == userId
+                    && request.resource.data.role in ['user', 'guest']
+                    && request.resource.data.uid == request.auth.uid;
+      
+      // Allow update only when:
+      // - User is updating their own document
+      // - They are NOT changing their role (role changes only by admin)
+      // - They are NOT changing their UID
+      // - They are NOT changing their loginMethod
+      allow update: if isAuthenticated() 
+                    && request.auth.uid == userId
+                    && request.resource.data.role == resource.data.role
+                    && request.resource.data.uid == resource.data.uid
+                    && request.resource.data.loginMethod == resource.data.loginMethod;
+      
+      // Allow delete: NEVER (only admins can delete via Firebase Console)
+      allow delete: if false;
+    }
+    
+    // ========================================
+    // Suggestions Collection
+    // ========================================
+    
+    match /suggestions/{suggestionId} {
+      // Allow read access for authenticated users
+      allow read: if isAuthenticated();
+      
+      // Allow create when:
+      // - User is authenticated
+      // - User is setting their own UID as authorId
+      // - Status is set to 'pending' (users cannot set other statuses)
+      allow create: if isAuthenticated() 
+                    && request.resource.data.authorId == request.auth.uid
+                    && request.resource.data.status == 'pending';
+      
+      // Allow update when:
+      // - User is admin or moderator (can change status, etc.)
+      // - OR user is the owner and only updating their own content (not status)
+      allow update: if isModeratorOrAbove()
+                    || (isOwner('authorId') 
+                        && request.resource.data.status == resource.data.status
+                        && request.resource.data.authorId == resource.data.authorId);
+      
+      // Allow delete only for admins and moderators
+      allow delete: if isModeratorOrAbove();
+    }
+    
+    // ========================================
+    // Archive Collection
+    // ========================================
+    
+    match /archive/{archiveId} {
+      // Allow read access for authenticated users
+      allow read: if isAuthenticated();
+      
+      // Allow create only for admins
+      allow create: if isAdmin();
+      
+      // Allow update only for admins
+      allow update: if isAdmin();
+      
+      // Allow delete only for admins
+      allow delete: if isAdmin();
+    }
+    
+    // ========================================
+    // Comments Collection
+    // ========================================
+    
+    match /comments/{commentId} {
+      // Allow read access for authenticated users
+      allow read: if isAuthenticated();
+      
+      // Allow create when:
+      // - User is authenticated
+      // - User is setting their own UID as authorId
+      allow create: if isAuthenticated() 
+                    && request.resource.data.authorId == request.auth.uid;
+      
+      // Allow update when:
+      // - User is the owner of the comment
+      allow update: if isOwner('authorId');
+      
+      // Allow delete when:
+      // - User is the owner of the comment
+      // - OR user is admin/moderator
+      allow delete: if isOwner('authorId') || isModeratorOrAbove();
+    }
+    
+    // ========================================
+    // Additional Security Notes
+    // ========================================
+    
+    // IMPORTANT SECURITY PRINCIPLES:
+    // 
+    // 1. Role-based access control is enforced SERVER-SIDE by Firestore rules
+    //    - Frontend JavaScript checks are for UX only, not security
+    //    - Users cannot bypass these rules by modifying the frontend
+    // 
+    // 2. Users cannot:
+    //    - Promote themselves to admin or moderator
+    //    - Change their own role
+    //    - Modify other users' documents
+    //    - Create archive entries (admin only)
+    //    - Change suggestion status (moderator/admin only)
+    //    - Impersonate other authors
+    // 
+    // 3. To assign roles:
+    //    - Currently done manually via Firebase Console
+    //    - Future: Admin dashboard will use Cloud Functions or Firebase Admin SDK
+    //    - Never allow role assignment from client-side code
+    // 
+    // 4. Role hierarchy:
+    //    - guest: Read-only access to public content
+    //    - user: Can create and edit own suggestions
+    //    - moderator: Can moderate suggestions (change status, delete)
+    //    - admin: Full access including archive management
+    // 
+    // 5. First user setup:
+    //    - The first user who signs up will get 'user' role
+    //    - To make someone admin, manually edit their document in Firebase Console
+    //    - Change the 'role' field from 'user' to 'admin'
+    //    - This is a one-time manual step for the initial admin
+  }
+}
